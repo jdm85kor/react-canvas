@@ -25,4 +25,7 @@ export default class Canvas extends Component {
 };
 
 Canvas.protoTypes = {
+  width: PropTypes.number,
+  height: PropTypes.number,
+  colorOption: PropTypes.string,
 };
