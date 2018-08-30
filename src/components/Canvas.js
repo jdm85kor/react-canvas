@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { findDOMNode } from 'react-dom'
 import Color from '../constants/color';
+import { hasPointInArray } from '../utils/arrayUtils';
 // import Styled from 'styled-components';
 
 export default class Canvas extends Component {
@@ -28,6 +29,7 @@ export default class Canvas extends Component {
 
     this.drawLine = this.drawLine.bind(this);
   }
+
   // shouldComponentUpdate(nextProps, nextState) {
   //   console.log('shouldComponentUpdate');
   //   return ;
@@ -67,9 +69,13 @@ export default class Canvas extends Component {
     if (!this.state.isClicked) return [];
     const ctx = this.ctx;
     const { x, y } = this.getCursorPosition(e);
-    const start = this.pointsOfPolygons[this.state.numberOfPolygon].slice(-1)[0];
-    this.drawLine(ctx, start, { x, y });
-    this.pointsOfPolygons[this.state.numberOfPolygon].push({ x, y, color: this.props.colorOption });
+
+    if (!hasPointInArray(this.pointsOfPolygons[this.state.numberOfPolygon], {x, y})) {
+      const start = this.pointsOfPolygons[this.state.numberOfPolygon].slice(-1)[0];
+      this.drawLine(ctx, start, { x, y });
+      this.pointsOfPolygons[this.state.numberOfPolygon].push({ x, y, color: this.props.colorOption });
+      this.pointsAll[y][x] += 1;
+    }
   }
 
   onMouseOut(e) {
