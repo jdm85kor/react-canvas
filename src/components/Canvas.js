@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { findDOMNode } from 'react-dom'
 import Color from '../constants/color';
-import { hasPointInArray } from '../utils/arrayUtils';
+import { hasPointInArray, getCoordinates } from '../utils/arrayUtils';
 // import Styled from 'styled-components';
 
 export default class Canvas extends Component {
@@ -130,22 +130,28 @@ export default class Canvas extends Component {
       const tempPoints = [];
       for (let index in points) {
         if (Number(index) === points.length-1) break;
+        tempPoints.push(points[index]);
+
         const xSpacing = points[index*1+1].x - points[index].x;
         const ySpacing = points[index*1+1].y - points[index].y;
 
         if (Math.abs(xSpacing) > 1 || Math.abs(ySpacing) > 1) {
-          // add moreCoordinates
-        } else {
-          tempPoints.push(points[index]);
+          for (let newPoint of getCoordinates(points[index], points[index*1+1], xSpacing, ySpacing)) {
+            tempPoints.push(newPoint);
+            this.pointsAll[newPoint.y][newPoint.x] += 1;
+          }
         }
       }
       tempPoints.push(points[points.length-1]);
 
-      // make last line. there is only visible line.
+      // make last line. there was only visible line.
       const xSpacing = points[0].x - points[points.length-1].x;
       const ySpacing = points[0].y - points[points.length-1].y;
 
-      for (;;) {} //
+      for (let newPoint of getCoordinates(points[points.length-1], points[0], xSpacing, ySpacing)) {
+        tempPoints.push(newPoint);
+        this.pointsAll[newPoint.y][newPoint.x] += 1;
+      }
 
       tempPointsOfPolygons.push(tempPoints);
     }
