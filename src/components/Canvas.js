@@ -18,6 +18,7 @@ export default class Canvas extends Component {
 
     this.pointsOfPolygons = [];
     this.pointsAll = null;
+    this.pointsOfIntersection = [];
 
     this.merge = this.merge.bind(this);
     this.clear = this.clear.bind(this);
@@ -28,6 +29,7 @@ export default class Canvas extends Component {
     this.onMouseUp = this.onMouseUp.bind(this);
 
     this.drawLine = this.drawLine.bind(this);
+    this.makeMoreCoordinates = this.makeMoreCoordinates.bind(this);
   }
 
   // shouldComponentUpdate(nextProps, nextState) {
@@ -73,6 +75,7 @@ export default class Canvas extends Component {
     if (!hasPointInArray(this.pointsOfPolygons[this.state.numberOfPolygon], {x, y})) {
       const start = this.pointsOfPolygons[this.state.numberOfPolygon].slice(-1)[0];
       this.drawLine(ctx, start, { x, y });
+
       this.pointsOfPolygons[this.state.numberOfPolygon].push({ x, y, color: this.props.colorOption });
       this.pointsAll[y][x] += 1;
     }
@@ -121,7 +124,36 @@ export default class Canvas extends Component {
     ctx.restore();
   }
 
+  makeMoreCoordinates() {
+    const tempPointsOfPolygons = [];
+    for (let points of this.pointsOfPolygons) {
+      const tempPoints = [];
+      for (let index in points) {
+        if (Number(index) === points.length-1) break;
+        const xSpacing = points[index*1+1].x - points[index].x;
+        const ySpacing = points[index*1+1].y - points[index].y;
+
+        if (Math.abs(xSpacing) > 1 || Math.abs(ySpacing) > 1) {
+          // add moreCoordinates
+        } else {
+          tempPoints.push(points[index]);
+        }
+      }
+      tempPoints.push(points[points.length-1]);
+
+      // make last line. there is only visible line.
+      const xSpacing = points[0].x - points[points.length-1].x;
+      const ySpacing = points[0].y - points[points.length-1].y;
+
+      for (;;) {} //
+
+      tempPointsOfPolygons.push(tempPoints);
+    }
+    this.pointsOfPolygons = tempPointsOfPolygons;
+  }
+
   merge() {
+    this.makeMoreCoordinates();
   }
 
   clear() {
@@ -152,6 +184,7 @@ export default class Canvas extends Component {
           onMouseOut={this.onMouseOut}
           onMouseUp={this.onMouseUp}
         />
+        <div>현재 도형 갯수: {this.state.numberOfPolygon}</div>
       </div>
     );
   }
