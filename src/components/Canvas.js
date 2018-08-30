@@ -7,9 +7,16 @@ import Color from '../constants/color';
 export default class Canvas extends Component {
   constructor(props) {
     super(props);
+    this.state = {
+      isClicked: false,
+      numberOfPolygon: 0,
+    };
 
     this.canvas = null;
     this.ctx = null;
+
+    this.pointsOfPolygons = [];
+    this.pointsAll = null;
 
     this.merge = this.merge.bind(this);
     this.clear = this.clear.bind(this);
@@ -18,6 +25,8 @@ export default class Canvas extends Component {
     this.onMouseMove = this.onMouseMove.bind(this);
     this.onMouseOut = this.onMouseOut.bind(this);
     this.onMouseUp = this.onMouseUp.bind(this);
+
+    this.drawLine = this.drawLine.bind(this);
   }
   // shouldComponentUpdate(nextProps, nextState) {
   //   console.log('shouldComponentUpdate');
@@ -27,6 +36,12 @@ export default class Canvas extends Component {
   componentDidMount() {
     this.canvas = findDOMNode(this.canvasRef);
     this.ctx = this.canvas.getContext('2d');
+
+    const { width, height } = this.props;
+    this.pointsAll = new Array(height);
+    for (let i = 0; i < height; i++) {
+      this.pointsAll[i] = new Array(width).fill(0);
+    }
   }
 
   getCursorPosition(e) {
@@ -52,10 +67,36 @@ export default class Canvas extends Component {
     const { x, y } = this.getCursorPosition(e);
   }
 
+  drawLine(ctx, start, dest) {
+    ctx.save();
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = Color[this.state.colorOption];
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.moveTo(start.x, start.y);
+    ctx.lineTo(dest.x, dest.y);
+    ctx.closePath();
+    ctx.stroke();
+    ctx.restore();
+  }
+
   merge() {
   }
 
   clear() {
+    const { width, height } = this.props;
+    this.pointsOfPolygons = [];
+    this.pointsAll = new Array(height);
+    for (let i = 0; i < height; i++) {
+      this.pointsAll[i] = new Array(width).fill(0);
+    }
+    this.ctx.clearRect(0, 0, width, height);
+    this.setState({
+      isClicked: false,
+      numberOfPolygon: 0,
+    });
   }
 
   render() {
