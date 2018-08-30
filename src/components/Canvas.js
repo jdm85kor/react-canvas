@@ -8,6 +8,9 @@ export default class Canvas extends Component {
   constructor(props) {
     super(props);
 
+    this.canvas = null;
+    this.ctx = null;
+
     this.merge = this.merge.bind(this);
     this.clear = this.clear.bind(this);
 
@@ -16,17 +19,37 @@ export default class Canvas extends Component {
     this.onMouseOut = this.onMouseOut.bind(this);
     this.onMouseUp = this.onMouseUp.bind(this);
   }
+  // shouldComponentUpdate(nextProps, nextState) {
+  //   console.log('shouldComponentUpdate');
+  //   return ;
+  // }
 
-  onMouseDown() {
+  componentDidMount() {
+    this.canvas = findDOMNode(this.canvasRef);
+    this.ctx = this.canvas.getContext('2d');
   }
 
-  onMouseMove() {
+  getCursorPosition(e) {
+    const { top, left } = this.canvas.getBoundingClientRect();
+    return {
+      x: e.clientX - left,
+      y: e.clientY - top,
+    };
   }
 
-  onMouseOut() {
+  onMouseDown(e) {
+    const { x, y } = this.getCursorPosition(e);
   }
 
-  onMouseUp() {
+  onMouseMove(e) {
+    const { x, y } = this.getCursorPosition(e);
+  }
+
+  onMouseOut(e) {
+  }
+
+  onMouseUp(e) {
+    const { x, y } = this.getCursorPosition(e);
   }
 
   merge() {
