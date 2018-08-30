@@ -73,10 +73,26 @@ export default class Canvas extends Component {
   }
 
   onMouseOut(e) {
+    if (!this.state.isClicked) return [];
+    const ctx = this.ctx;
+    let { x, y } = this.getCursorPosition(e);
+    const start = this.pointsOfPolygons[this.state.numberOfPolygon][0];
+    x = x > 500 ? 499 : x;
+    y = y > 500 ? 499 : y;
+    this.drawLine(ctx, start, { x, y });
+
+    this.setState((state) => ({
+      isClicked: false,
+      numberOfPolygon: ++state.numberOfPolygon,
+    }));
   }
 
   onMouseUp(e) {
+    const ctx = this.ctx;
     const { x, y } = this.getCursorPosition(e);
+    const start = this.pointsOfPolygons[this.state.numberOfPolygon][0];
+
+    this.drawLine(ctx, start, { x, y });
 
     this.setState((state) => ({
       isClicked: false,
