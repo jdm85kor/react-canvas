@@ -54,10 +54,22 @@ export default class Canvas extends Component {
 
   onMouseDown(e) {
     const { x, y } = this.getCursorPosition(e);
+    const nop = this.state.numberOfPolygon;
+
+    this.pointsOfPolygons[nop] = [];
+    this.pointsOfPolygons[nop].push({ x, y, color: this.props.colorOption});
+    this.pointsAll[y][x] += 1;
+
+    this.setState({ isClicked: true });
   }
 
   onMouseMove(e) {
+    if (!this.state.isClicked) return [];
+    const ctx = this.ctx;
     const { x, y } = this.getCursorPosition(e);
+    const start = this.pointsOfPolygons[this.state.numberOfPolygon].slice(-1)[0];
+    this.drawLine(ctx, start, { x, y });
+    this.pointsOfPolygons[this.state.numberOfPolygon].push({ x, y, color: this.props.colorOption });
   }
 
   onMouseOut(e) {
@@ -65,6 +77,11 @@ export default class Canvas extends Component {
 
   onMouseUp(e) {
     const { x, y } = this.getCursorPosition(e);
+
+    this.setState((state) => ({
+      isClicked: false,
+      numberOfPolygon: ++state.numberOfPolygon,
+    }));
   }
 
   drawLine(ctx, start, dest) {
@@ -73,10 +90,10 @@ export default class Canvas extends Component {
     ctx.lineCap = 'round';
     ctx.beginPath();
     ctx.lineWidth = 1;
-    ctx.strokeStyle = Color[this.state.colorOption];
+    ctx.strokeStyle = Color[this.props.colorOption];
     ctx.globalCompositeOperation = 'source-over';
-    ctx.moveTo(start.x, start.y);
-    ctx.lineTo(dest.x, dest.y);
+    ctx.moveTo(dest.x, dest.y);
+    ctx.lineTo(start.x, start.y);
     ctx.closePath();
     ctx.stroke();
     ctx.restore();
