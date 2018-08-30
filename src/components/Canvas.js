@@ -10,6 +10,23 @@ export default class Canvas extends Component {
 
     this.merge = this.merge.bind(this);
     this.clear = this.clear.bind(this);
+
+    this.onMouseDown = this.onMouseDown.bind(this);
+    this.onMouseMove = this.onMouseMove.bind(this);
+    this.onMouseOut = this.onMouseOut.bind(this);
+    this.onMouseUp = this.onMouseUp.bind(this);
+  }
+
+  onMouseDown() {
+  }
+
+  onMouseMove() {
+  }
+
+  onMouseOut() {
+  }
+
+  onMouseUp() {
   }
 
   merge() {
@@ -27,6 +44,10 @@ export default class Canvas extends Component {
           ref={(canvas) => { this.canvasRef = canvas; }}
           width={width}
           height={height}
+          onMouseDown={this.onMouseDown}
+          onMouseMove={this.onMouseMove}
+          onMouseOut={this.onMouseOut}
+          onMouseUp={this.onMouseUp}
         />
       </div>
     );
