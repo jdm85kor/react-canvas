@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { findDOMNode } from 'react-dom'
 import Color from '../constants/color';
+// import Styled from 'styled-components';
 
 export default class Canvas extends Component {
   constructor(props) {
@@ -18,8 +19,16 @@ export default class Canvas extends Component {
   }
 
   render() {
+    const { width, height } = this.props;
     return (
-      <div></div>
+      <div>
+        <canvas
+          style={{ border: '0.5px solid', cursor: 'pointer' }}
+          ref={(canvas) => { this.canvasRef = canvas; }}
+          width={width}
+          height={height}
+        />
+      </div>
     );
   }
 };

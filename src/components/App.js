@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import Canvas from './Canvas';
 import ControlPanel from './ControlPanel';
+// import Styled from 'styled-components';
 
 export default class App extends Component {
 constructor(props) {
