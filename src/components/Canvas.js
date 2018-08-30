@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { findDOMNode } from 'react-dom'
+import Color from '../constants/color';
 
 export default class Canvas extends Component {
   constructor(props) {
@@ -17,7 +18,9 @@ export default class Canvas extends Component {
   }
 
   render() {
-    return ();
+    return (
+      <div></div>
+    );
   }
 };
 

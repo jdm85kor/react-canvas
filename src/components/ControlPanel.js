@@ -7,7 +7,9 @@ export default class ControlPanel extends Component {
   };
 
   render() {
-    return ;
+    return (
+      <div></div>
+    );
   }
 };
 
