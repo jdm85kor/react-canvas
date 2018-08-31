@@ -33,6 +33,7 @@ export default class Canvas extends Component {
     this.getPointsOfMergedPolygons = this.getPointsOfMergedPolygons.bind(this);
     this.getMiddleOfIntersections = this.getMiddleOfIntersections.bind(this);
     this.getOutlines = this.getOutlines.bind(this);
+    this.reDraw = this.reDraw.bind(this);
   }
 
   // shouldComponentUpdate(nextProps, nextState) {
@@ -198,23 +199,16 @@ export default class Canvas extends Component {
   }
 
   getPointsOfMergedPolygons() {
-    const poi = this.pointsOfIntersection;
-    if (poi.length === 0 || poi % 2 !== 0) {
-      alert('교차점이 제대로 형성되지 않았습니다. 천천히 다시 그려주세요.');
-      this.clear();
-      return;
-    }
     return this.getOutlines(this.getMiddleOfIntersections());
   }
 
   getMiddleOfIntersections() {
     const pointsOfPolygons = this.pointsOfPolygons;
     const intersectionOnPolygons = new Array(this.state.numberOfPolygon);
-    const middleOfIntersections = new Array(this.state.numberOfPolygon);
+    const middleOfIntersections = [];
 
     for (let i in pointsOfPolygons) {
       intersectionOnPolygons[i] = [];
-      middleOfIntersections[i] = [];
       for (let point of this.pointsOfIntersection) {
         const index = pointsOfPolygons[i].findIndex((v) => v.x === point.x && v.y === point.y);
         if (index > -1) intersectionOnPolygons[i].push(index);
@@ -228,11 +222,11 @@ export default class Canvas extends Component {
         if (Number(j) !== intersectionOnPolygons[i].length -1) {
           middlePoints.push(Math.floor((intersectionOnPolygons[i][j] + intersectionOnPolygons[i][j*1+1]) / 2));
         } else {
-          const IndexMiddlePoint = Math.floor((intersectionOnPolygons[i][0] + pointsOfPolygons[i].length - 1 - intersectionOnPolygons[i][j]) / 2);
-          if (IndexMiddlePoint + intersectionOnPolygons[i][j] < pointsOfPolygons[i].length) {
-            middlePoints.push(IndexMiddlePoint + intersectionOnPolygons[i][j]);
+          const indexMiddlePoint = Math.floor((intersectionOnPolygons[i][0] + pointsOfPolygons[i].length - 1 - intersectionOnPolygons[i][j]) / 2);
+          if (indexMiddlePoint + intersectionOnPolygons[i][j] < pointsOfPolygons[i].length) {
+            middlePoints.push(indexMiddlePoint + intersectionOnPolygons[i][j]);
           } else {
-            middlePoints.push(intersectionOnPolygons[i][j] + IndexMiddlePoint - (pointsOfPolygons[i].length - 1));
+            middlePoints.push(intersectionOnPolygons[i][j] + indexMiddlePoint - (pointsOfPolygons[i].length - 1));
           }
         }
       }
@@ -242,13 +236,99 @@ export default class Canvas extends Component {
   }
 
   getOutlines(middleOfIntersections) {
-    return;
+    const newPointsOfPolygons = [];
+
+    for (let i in middleOfIntersections) {
+      let newPolygon = [];
+      const originPolygon = this.pointsOfPolygons[i];
+      for (let j in middleOfIntersections[i]) {
+        const { x: xMiddle, y: yMiddle, color} = originPolygon[middleOfIntersections[i][j]];
+        const xInCanvas = this.pointsAll[yMiddle];
+        let polygonsOnLeftside = [];
+        let polygonsOnRightside = [];
+
+        for (let direction = 0; direction < 2; direction++) {
+          const start = direction === 0 ? 0 : xMiddle + 1;
+          const end = direction === 0 ? xMiddle : xInCanvas.length;
+          for (let m = start; m < end ; m++) {
+            const x_m = xInCanvas[m];
+            if (x_m.cnt > 0
+            && x_m.color.includes(color)
+            && !x_m.orderOfPolygon.includes(i)) {
+              if (direction === 0) {
+                if (polygonsOnLeftside.includes(x_m.orderOfPolygon[0] > -1)) {
+                  polygonsOnLeftside.splice(polygonsOnLeftside.indexOf(x_m.orderOfPolygon[0]), 1);
+                } else {
+                  polygonsOnLeftside.push(x_m.orderOfPolygon[0]);
+                  // console.log('left');
+                }
+              } else {
+                if (polygonsOnRightside.includes(x_m.orderOfPolygon[0] > -1)) {
+                  polygonsOnRightside.splice(polygonsOnRightside.indexOf(x_m.orderOfPolygon[0]), 1);
+                } else {
+                  polygonsOnRightside.push(x_m.orderOfPolygon[0]);
+                  // console.log('rigth');
+                }
+              }
+            }
+          }
+        }
+        console.log(polygonsOnLeftside, polygonsOnRightside);
+        if (!polygonsOnLeftside.length || !polygonsOnRightside.length) {
+          if (j < middleOfIntersections[i].length-1) {
+            newPolygon = newPolygon.concat(originPolygon.slice(this.pointsOfIntersection[i][j], this.pointsOfIntersection[i][j*1+1]));
+          } else {
+            newPolygon = newPolygon.concat(originPolygon.slice(this.pointsOfIntersection[i][j]));
+            if (this.pointsOfIntersection[i][0] > 0) {
+              newPolygon = newPolygon.concat(originPolygon.slice(0, this.pointsOfIntersection[i][0]));
+            }
+          }
+        }
+      }
+      newPointsOfPolygons.push(newPolygon);
+    }
+    return newPointsOfPolygons;
+  }
+
+  reDraw() {
+    const ctx = this.ctx;
+    const { width, height } = this.props;
+    ctx.clearRect(0, 0, width, height);
+
+    for (let polygon of this.pointsOfPolygons) {
+      for (let indexPoint in polygon) {
+        if (Number(indexPoint) !== polygon.length - 1) {
+          this.drawLine(
+            ctx,
+            polygon[indexPoint],
+            polygon[indexPoint*1+1],
+            polygon[indexPoint].color
+          );
+        } else {
+          this.drawLine(
+            ctx,
+            polygon[0],
+            polygon[polygon.length - 1],
+            polygon[0].color
+          );
+        }
+      }
+    }
+
   }
 
   merge() {
     this.makeMoreCoordinates();
+
+    const poi = this.pointsOfIntersection;
+    if (poi.length === 0 || poi.length % 2 !== 0) {
+      alert('교차점이 제대로 형성되지 않았습니다. 천천히 다시 그려주세요.');
+      this.clear();
+      return;
+    }
+
     this.pointsOfPolygons = this.getPointsOfMergedPolygons();
-    // this.reDraw();
+    this.reDraw();
   }
 
   clear() {
