@@ -180,9 +180,15 @@ export default class Canvas extends Component {
 
       for (let newPoint of getCoordinates(points[points.length-1], points[0], xSpacing, ySpacing)) {
         tempPoints.push(newPoint);
-        this.pointsAll[newPoint.y][newPoint.x].cnt += 1;
+        const p = this.pointsAll[newPoint.y][newPoint.x];
+        p.cnt += 1;
+        p.color.push(newPoint.color);
+        p.orderOfPolygon.push(Number(orderOfPolygon));
+        if (p.cnt === 2) {
+          const { x, y } = newPoint;
+          this.pointsOfIntersection.push({ x, y });
+        }
       }
-
       tempPointsOfPolygons.push(tempPoints);
     }
     this.pointsOfPolygons = tempPointsOfPolygons;
@@ -190,13 +196,14 @@ export default class Canvas extends Component {
 
   getPointsOfMergedPolygons() {
     
+    return [];
   }
 
   merge() {
     this.makeMoreCoordinates();
+    console.log(this.pointsOfIntersection);
     this.pointsOfPolygons = this.getPointsOfMergedPolygons();
     // this.reDraw();
-    console.log('pointsOfIntersection', this.pointsOfIntersection);
   }
 
   clear() {
