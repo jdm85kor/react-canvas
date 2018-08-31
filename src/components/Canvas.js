@@ -11,7 +11,6 @@ export default class Canvas extends Component {
     this.state = {
       isClicked: false,
       numberOfPolygon: 0,
-      numberOfIntersection: 0,
     };
 
     this.canvas = null;
@@ -124,7 +123,6 @@ export default class Canvas extends Component {
 
   onMouseUp(e) {
     const ctx = this.ctx;
-    const that = this;
     const { x, y } = this.getCursorPosition(e);
     const start = this.pointsOfPolygons[this.state.numberOfPolygon][0];
     this.pointsOfPolygons[this.state.numberOfPolygon].push({ x, y, color: this.props.colorOption });
@@ -233,10 +231,13 @@ export default class Canvas extends Component {
       }
       middleOfIntersections.push(middlePoints);
     }
-    return middleOfIntersections;
+    return {
+      middleOfIntersections,
+      intersectionOnPolygons
+    };
   }
 
-  getOutlines(middleOfIntersections) {
+  getOutlines({ middleOfIntersections, intersectionOnPolygons }) {
     const newPointsOfPolygons = [];
 
     for (let i in middleOfIntersections) {
@@ -251,35 +252,39 @@ export default class Canvas extends Component {
         for (let direction = 0; direction < 2; direction++) {
           const start = direction === 0 ? 0 : xMiddle + 1;
           const end = direction === 0 ? xMiddle : xInCanvas.length;
+          let continuous = false;
           for (let m = start; m < end ; m++) {
             const x_m = xInCanvas[m];
             if (x_m.cnt > 0
             && x_m.color.includes(color)
-            && !x_m.orderOfPolygon.includes(i)) {
+            && !x_m.orderOfPolygon.includes(Number(i))
+            && !continuous) {
+              continuous = true;
               if (direction === 0) {
-                if (polygonsOnLeftside.includes(x_m.orderOfPolygon[0]) > -1) {
+                if (polygonsOnLeftside.includes(x_m.orderOfPolygon[0])) {
                   polygonsOnLeftside.splice(polygonsOnLeftside.indexOf(x_m.orderOfPolygon[0]), 1);
                 } else {
                   polygonsOnLeftside.push(x_m.orderOfPolygon[0]);
                 }
               } else {
-                if (polygonsOnRightside.includes(x_m.orderOfPolygon[0]) > -1) {
+                if (polygonsOnRightside.includes(x_m.orderOfPolygon[0])) {
                   polygonsOnRightside.splice(polygonsOnRightside.indexOf(x_m.orderOfPolygon[0]), 1);
                 } else {
                   polygonsOnRightside.push(x_m.orderOfPolygon[0]);
                 }
               }
+            } else if (x_m.cnt === 0 && continuous === true) {
+              continuous = false;
             }
           }
         }
-        console.log(polygonsOnLeftside, polygonsOnRightside);
         if (!polygonsOnLeftside.length || !polygonsOnRightside.length) {
           if (j < middleOfIntersections[i].length-1) {
-            newPolygon = newPolygon.concat(originPolygon.slice(this.pointsOfIntersection[i][j], this.pointsOfIntersection[i][j*1+1]));
+            newPolygon = newPolygon.concat(originPolygon.slice(intersectionOnPolygons[i][j], intersectionOnPolygons[i][j * 1 + 1]));
           } else {
-            newPolygon = newPolygon.concat(originPolygon.slice(this.pointsOfIntersection[i][j]));
-            if (this.pointsOfIntersection[i][0] > 0) {
-              newPolygon = newPolygon.concat(originPolygon.slice(0, this.pointsOfIntersection[i][0]));
+            newPolygon = newPolygon.concat(originPolygon.slice(intersectionOnPolygons[i][j]));
+            if (intersectionOnPolygons[i][0] > 0) {
+              newPolygon = newPolygon.concat(originPolygon.slice(0, intersectionOnPolygons[i][0]));
             }
           }
         }
@@ -302,13 +307,6 @@ export default class Canvas extends Component {
             polygon[indexPoint],
             polygon[indexPoint*1+1],
             polygon[indexPoint].color
-          );
-        } else {
-          this.drawLine(
-            ctx,
-            polygon[0],
-            polygon[polygon.length - 1],
-            polygon[0].color
           );
         }
       }
@@ -335,6 +333,7 @@ export default class Canvas extends Component {
     const { width, height } = this.props;
     this.pointsOfPolygons = [];
     this.pointsAll = new Array(height);
+    this.pointsOfIntersection = [];
     for (let i = 0; i < height; i++) {
       // eslint-disable-next-line
       this.pointsAll[i] = new Array(width).map(() => new Object());
