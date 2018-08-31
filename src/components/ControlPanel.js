@@ -5,14 +5,29 @@ import PropTypes from 'prop-types';
 export default class ControlPanel extends Component {
   constructor(props) {
     super(props);
+
+    this.handleChangeOption = this.handleChangeOption.bind(this);
+    this.handleClickMerge = this.handleClickMerge.bind(this);
+    this.handleClickClear = this.handleClickClear.bind(this);
   };
+
+  handleChangeOption(e) {
+    this.props.handleChangeColorOption(e.target.value);
+  }
+
+  handleClickMerge(e) {
+    e.preventDefault();
+    this.props.handleMerge();
+  }
+
+  handleClickClear(e) {
+    e.preventDefault();
+    this.props.handleClear();
+  }
 
   render() {
     const {
       colorOption,
-      handleChangeColorOption,
-      handleClickMerge,
-      handleClickClear
     } = this.props;
     return (
       <div>
@@ -22,7 +37,7 @@ export default class ControlPanel extends Component {
               type='radio'
               value='black'
               checked={colorOption === 'black'}
-              onChange={handleChangeColorOption}
+              onChange={this.handleChangeOption}
             />
             Black
           </label>
@@ -31,7 +46,7 @@ export default class ControlPanel extends Component {
               type='radio'
               value='red'
               checked={colorOption === 'red'}
-              onChange={handleChangeColorOption}
+              onChange={this.handleChangeOption}
             />
             Red
           </label>
@@ -40,7 +55,7 @@ export default class ControlPanel extends Component {
               type='radio'
               value='green'
               checked={colorOption === 'green'}
-              onChange={handleChangeColorOption}
+              onChange={this.handleChangeOption}
             />
             Green
           </label>
@@ -49,12 +64,12 @@ export default class ControlPanel extends Component {
               type='radio'
               value='blue'
               checked={colorOption === 'blue'}
-              onChange={handleChangeColorOption}
+              onChange={this.handleChangeOption}
             />
             Blue
           </label>
-          <button onClick={handleClickMerge}>Merge</button>
-          <button onClick={handleClickClear}>Clear</button>
+          <button onClick={this.handleClickMerge}>Merge</button>
+          <button onClick={this.handleClickClear}>Clear</button>
         </form>
       </div>
     );
@@ -64,6 +79,6 @@ export default class ControlPanel extends Component {
 ControlPanel.propTypes = {
   colorOption: PropTypes.string,
   handleChangeColorOption: PropTypes.func,
-  handleClickMerge: PropTypes.func,
-  handleClickClear: PropTypes.func,
+  handleMerge: PropTypes.func,
+  handleClear: PropTypes.func,
 };

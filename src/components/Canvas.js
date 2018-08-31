@@ -30,6 +30,7 @@ export default class Canvas extends Component {
 
     this.drawLine = this.drawLine.bind(this);
     this.makeMoreCoordinates = this.makeMoreCoordinates.bind(this);
+    this.getPointsOfMergedPolygons = this.getPointsOfMergedPolygons.bind(this);
   }
 
   // shouldComponentUpdate(nextProps, nextState) {
@@ -43,8 +44,15 @@ export default class Canvas extends Component {
 
     const { width, height } = this.props;
     this.pointsAll = new Array(height);
-    for (let i = 0; i < height; i++) {
-      this.pointsAll[i] = new Array(width).fill(0);
+    for (let i = 0 ; i < height ; i++) {
+      this.pointsAll[i] = new Array(width).map(() => new Object());
+      for (let j = 0 ; j < width ; j++) {
+        this.pointsAll[i][j] = {
+          cnt: 0,
+          color: [],
+          orderOfPolygon: [],
+        }
+      }
     }
   }
 
@@ -59,10 +67,15 @@ export default class Canvas extends Component {
   onMouseDown(e) {
     const { x, y } = this.getCursorPosition(e);
     const nop = this.state.numberOfPolygon;
+    const p = this.pointsAll[y][x];
 
-    this.pointsOfPolygons[nop] = [];
-    this.pointsOfPolygons[nop].push({ x, y, color: this.props.colorOption});
-    this.pointsAll[y][x] += 1;
+    this.pointsOfPolygons[nop] = [{ x, y, color: this.props.colorOption}];
+    p.cnt += 1;
+    p.color.push(this.props.colorOption);
+    p.orderOfPolygon.push(nop);
+    if (p.cnt === 2) {
+      this.pointsOfIntersection.push({ x, y });
+    }
 
     this.setState({ isClicked: true });
   }
@@ -77,7 +90,14 @@ export default class Canvas extends Component {
       this.drawLine(ctx, start, { x, y });
 
       this.pointsOfPolygons[this.state.numberOfPolygon].push({ x, y, color: this.props.colorOption });
-      this.pointsAll[y][x] += 1;
+
+      const p = this.pointsAll[y][x];
+      p.cnt += 1;
+      p.color.push(this.props.colorOption);
+      p.orderOfPolygon.push(this.state.numberOfPolygon);
+      if (p.cnt === 2) {
+        this.pointsOfIntersection.push({ x, y });
+      }
     }
   }
 
@@ -88,6 +108,7 @@ export default class Canvas extends Component {
     const start = this.pointsOfPolygons[this.state.numberOfPolygon][0];
     x = x > 500 ? 499 : x;
     y = y > 500 ? 499 : y;
+    this.pointsOfPolygons[this.state.numberOfPolygon].push({ x, y, color: this.props.colorOption });
     this.drawLine(ctx, start, { x, y });
 
     this.setState((state) => ({
@@ -100,6 +121,7 @@ export default class Canvas extends Component {
     const ctx = this.ctx;
     const { x, y } = this.getCursorPosition(e);
     const start = this.pointsOfPolygons[this.state.numberOfPolygon][0];
+    this.pointsOfPolygons[this.state.numberOfPolygon].push({ x, y, color: this.props.colorOption });
 
     this.drawLine(ctx, start, { x, y });
 
@@ -126,7 +148,8 @@ export default class Canvas extends Component {
 
   makeMoreCoordinates() {
     const tempPointsOfPolygons = [];
-    for (let points of this.pointsOfPolygons) {
+    for (let orderOfPolygon in this.pointsOfPolygons) {
+      const points = this.pointsOfPolygons[orderOfPolygon];
       const tempPoints = [];
       for (let index in points) {
         if (Number(index) === points.length-1) break;
@@ -138,7 +161,14 @@ export default class Canvas extends Component {
         if (Math.abs(xSpacing) > 1 || Math.abs(ySpacing) > 1) {
           for (let newPoint of getCoordinates(points[index], points[index*1+1], xSpacing, ySpacing)) {
             tempPoints.push(newPoint);
-            this.pointsAll[newPoint.y][newPoint.x] += 1;
+            const p = this.pointsAll[newPoint.y][newPoint.x];
+            p.cnt += 1;
+            p.color.push(newPoint.color);
+            p.orderOfPolygon.push(Number(orderOfPolygon));
+            if (p.cnt === 2) {
+              const { x, y } = newPoint;
+              this.pointsOfIntersection.push({ x, y });
+            }
           }
         }
       }
@@ -150,7 +180,7 @@ export default class Canvas extends Component {
 
       for (let newPoint of getCoordinates(points[points.length-1], points[0], xSpacing, ySpacing)) {
         tempPoints.push(newPoint);
-        this.pointsAll[newPoint.y][newPoint.x] += 1;
+        this.pointsAll[newPoint.y][newPoint.x].cnt += 1;
       }
 
       tempPointsOfPolygons.push(tempPoints);
@@ -158,8 +188,15 @@ export default class Canvas extends Component {
     this.pointsOfPolygons = tempPointsOfPolygons;
   }
 
+  getPointsOfMergedPolygons() {
+    
+  }
+
   merge() {
     this.makeMoreCoordinates();
+    this.pointsOfPolygons = this.getPointsOfMergedPolygons();
+    // this.reDraw();
+    console.log('pointsOfIntersection', this.pointsOfIntersection);
   }
 
   clear() {
@@ -167,7 +204,14 @@ export default class Canvas extends Component {
     this.pointsOfPolygons = [];
     this.pointsAll = new Array(height);
     for (let i = 0; i < height; i++) {
-      this.pointsAll[i] = new Array(width).fill(0);
+      this.pointsAll[i] = new Array(width).map(() => new Object());
+      for (let j = 0; j < width; j++) {
+        this.pointsAll[i][j] = {
+          cnt: 0,
+          color: [],
+          orderOfPolygon: [],
+        }
+      }
     }
     this.ctx.clearRect(0, 0, width, height);
     this.setState({

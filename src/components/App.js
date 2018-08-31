@@ -13,24 +13,21 @@ constructor(props) {
     };
 
     this.handleChangeColorOption = this.handleChangeColorOption.bind(this);
-    this.handleClickMerge = this.handleClickMerge.bind(this);
-    this.handleClickClear = this.handleClickClear.bind(this);
+    this.handleMerge = this.handleMerge.bind(this);
+    this.handleClear = this.handleClear.bind(this);
   }
 
-  handleChangeColorOption(e) {
-    // e.preventDefault();
+  handleChangeColorOption(value) {
     this.setState({
-      colorOption: e.target.value,
+      colorOption: value,
     });
   }
 
-  handleClickMerge(e) {
-    e.preventDefault();
+  handleMerge() {
     this.canvasRef.merge();
   }
 
-  handleClickClear(e) {
-    e.preventDefault();
+  handleClear() {
     this.canvasRef.clear();
   }
 
@@ -50,8 +47,8 @@ constructor(props) {
         <ControlPanel
           colorOption={this.state.colorOption}
           handleChangeColorOption={this.handleChangeColorOption}
-          handleClickMerge={this.handleClickMerge}
-          handleClickClear={this.handleClickClear}
+          handleMerge={this.handleMerge}
+          handleClear={this.handleClear}
         />
       </div>
     );
