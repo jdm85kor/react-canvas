@@ -11,6 +11,7 @@ export default class Canvas extends Component {
     this.state = {
       isClicked: false,
       numberOfPolygon: 0,
+      numberOfIntersection: 0,
     };
 
     this.canvas = null;
@@ -123,12 +124,12 @@ export default class Canvas extends Component {
 
   onMouseUp(e) {
     const ctx = this.ctx;
+    const that = this;
     const { x, y } = this.getCursorPosition(e);
     const start = this.pointsOfPolygons[this.state.numberOfPolygon][0];
     this.pointsOfPolygons[this.state.numberOfPolygon].push({ x, y, color: this.props.colorOption });
 
     this.drawLine(ctx, start, { x, y }, this.props.colorOption);
-
     this.setState((state) => ({
       isClicked: false,
       numberOfPolygon: ++state.numberOfPolygon,
@@ -256,18 +257,16 @@ export default class Canvas extends Component {
             && x_m.color.includes(color)
             && !x_m.orderOfPolygon.includes(i)) {
               if (direction === 0) {
-                if (polygonsOnLeftside.includes(x_m.orderOfPolygon[0] > -1)) {
+                if (polygonsOnLeftside.includes(x_m.orderOfPolygon[0]) > -1) {
                   polygonsOnLeftside.splice(polygonsOnLeftside.indexOf(x_m.orderOfPolygon[0]), 1);
                 } else {
                   polygonsOnLeftside.push(x_m.orderOfPolygon[0]);
-                  // console.log('left');
                 }
               } else {
-                if (polygonsOnRightside.includes(x_m.orderOfPolygon[0] > -1)) {
+                if (polygonsOnRightside.includes(x_m.orderOfPolygon[0]) > -1) {
                   polygonsOnRightside.splice(polygonsOnRightside.indexOf(x_m.orderOfPolygon[0]), 1);
                 } else {
                   polygonsOnRightside.push(x_m.orderOfPolygon[0]);
-                  // console.log('rigth');
                 }
               }
             }
@@ -321,6 +320,7 @@ export default class Canvas extends Component {
     this.makeMoreCoordinates();
 
     const poi = this.pointsOfIntersection;
+    console.log('교차점 => ', poi.length);
     if (poi.length === 0 || poi.length % 2 !== 0) {
       alert('교차점이 제대로 형성되지 않았습니다. 천천히 다시 그려주세요.');
       this.clear();
