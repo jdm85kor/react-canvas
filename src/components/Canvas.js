@@ -3,7 +3,14 @@ import PropTypes from 'prop-types';
 import { findDOMNode } from 'react-dom'
 import Color from '../constants/color';
 import { hasPointInArray, getCoordinates } from '../utils/coordinatesUtils';
-// import Styled from 'styled-components';
+import Styled from 'styled-components';
+
+const StyledCanvas = Styled.div`
+  > canvas {
+    border: 0.5px solid;
+    cursor: pointer;
+  }
+`;
 
 export default class Canvas extends Component {
   constructor(props) {
@@ -363,7 +370,7 @@ export default class Canvas extends Component {
   render() {
     const { width, height } = this.props;
     return (
-      <div>
+      <StyledCanvas>
         <canvas
           style={{ border: '0.5px solid', cursor: 'pointer' }}
           ref={(canvas) => { this.canvasRef = canvas; }}
@@ -375,7 +382,7 @@ export default class Canvas extends Component {
           onMouseUp={this.onMouseUp}
         />
         <div>현재 도형 갯수: {this.state.numberOfPolygon}</div>
-      </div>
+      </StyledCanvas>
     );
   }
 };

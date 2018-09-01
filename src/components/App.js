@@ -1,7 +1,17 @@
 import React, { Component } from 'react';
 import Canvas from './Canvas';
 import ControlPanel from './ControlPanel';
-// import Styled from 'styled-components';
+import Styled from 'styled-components';
+
+const StyledApp = Styled.div`
+  display: inline-flex;
+  flex-direction: row;
+  width: 700px;
+  height: 550px;
+  margin: 50px;
+  padding: 20px;
+  border: 1px solid;
+`;
 
 export default class App extends Component {
 constructor(props) {
@@ -32,12 +42,8 @@ constructor(props) {
   }
 
   render() {
-    const style = {
-      width: '800px',
-      height: '600px',
-    }
     return (
-      <div style={style}>
+      <StyledApp>
         <Canvas
           ref={(Canvas) => { this.canvasRef = Canvas }}
           width={this.state.width}
@@ -50,7 +56,7 @@ constructor(props) {
           handleMerge={this.handleMerge}
           handleClear={this.handleClear}
         />
-      </div>
+      </StyledApp>
     );
   }
 };
