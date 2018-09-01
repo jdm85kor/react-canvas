@@ -243,52 +243,57 @@ export default class Canvas extends Component {
     for (let i in middleOfIntersections) {
       let newPolygon = [];
       const originPolygon = this.pointsOfPolygons[i];
-      for (let j in middleOfIntersections[i]) {
-        const { x: xMiddle, y: yMiddle, color} = originPolygon[middleOfIntersections[i][j]];
-        const xInCanvas = this.pointsAll[yMiddle];
-        let polygonsOnLeftside = [];
-        let polygonsOnRightside = [];
+      if  (!middleOfIntersections[i].length) {
+        newPolygon = originPolygon;
+      } else {
+        for (let j in middleOfIntersections[i]) {
+          const { x: xMiddle, y: yMiddle, color} = originPolygon[middleOfIntersections[i][j]];
+          const xInCanvas = this.pointsAll[yMiddle];
+          let polygonsOnLeftside = [];
+          let polygonsOnRightside = [];
 
-        for (let direction = 0; direction < 2; direction++) {
-          const start = direction === 0 ? 0 : xMiddle + 1;
-          const end = direction === 0 ? xMiddle : xInCanvas.length;
-          let continuous = false;
-          for (let m = start; m < end ; m++) {
-            const x_m = xInCanvas[m];
-            if (x_m.cnt > 0
-            && x_m.color.includes(color)
-            && !x_m.orderOfPolygon.includes(Number(i))
-            && !continuous) {
-              continuous = true;
-              if (direction === 0) {
-                if (polygonsOnLeftside.includes(x_m.orderOfPolygon[0])) {
-                  polygonsOnLeftside.splice(polygonsOnLeftside.indexOf(x_m.orderOfPolygon[0]), 1);
+          for (let direction = 0; direction < 2; direction++) {
+            const start = direction === 0 ? 0 : xMiddle + 1;
+            const end = direction === 0 ? xMiddle : xInCanvas.length;
+            let continuous = false;
+            for (let m = start; m < end ; m++) {
+              const x_m = xInCanvas[m];
+              if (x_m.cnt > 0
+              && x_m.color.includes(color)
+              && !x_m.orderOfPolygon.includes(Number(i))
+              && !continuous) {
+                continuous = true;
+                if (direction === 0) {
+                  if (polygonsOnLeftside.includes(x_m.orderOfPolygon[0])) {
+                    polygonsOnLeftside.splice(polygonsOnLeftside.indexOf(x_m.orderOfPolygon[0]), 1);
+                  } else {
+                    polygonsOnLeftside.push(x_m.orderOfPolygon[0]);
+                  }
                 } else {
-                  polygonsOnLeftside.push(x_m.orderOfPolygon[0]);
+                  if (polygonsOnRightside.includes(x_m.orderOfPolygon[0])) {
+                    polygonsOnRightside.splice(polygonsOnRightside.indexOf(x_m.orderOfPolygon[0]), 1);
+                  } else {
+                    polygonsOnRightside.push(x_m.orderOfPolygon[0]);
+                  }
                 }
-              } else {
-                if (polygonsOnRightside.includes(x_m.orderOfPolygon[0])) {
-                  polygonsOnRightside.splice(polygonsOnRightside.indexOf(x_m.orderOfPolygon[0]), 1);
-                } else {
-                  polygonsOnRightside.push(x_m.orderOfPolygon[0]);
-                }
+              } else if (x_m.cnt === 0 && continuous === true) {
+                continuous = false;
               }
-            } else if (x_m.cnt === 0 && continuous === true) {
-              continuous = false;
             }
           }
-        }
-        if (!polygonsOnLeftside.length || !polygonsOnRightside.length) {
-          if (j < middleOfIntersections[i].length-1) {
-            newPolygon = newPolygon.concat(originPolygon.slice(intersectionOnPolygons[i][j], intersectionOnPolygons[i][j * 1 + 1]));
-          } else {
-            newPolygon = newPolygon.concat(originPolygon.slice(intersectionOnPolygons[i][j]));
-            if (intersectionOnPolygons[i][0] > 0) {
-              newPolygon = newPolygon.concat(originPolygon.slice(0, intersectionOnPolygons[i][0]));
+          if (!polygonsOnLeftside.length || !polygonsOnRightside.length) {
+            if (j < middleOfIntersections[i].length-1) {
+              newPolygon = newPolygon.concat(originPolygon.slice(intersectionOnPolygons[i][j], intersectionOnPolygons[i][j * 1 + 1]));
+            } else {
+              newPolygon = newPolygon.concat(originPolygon.slice(intersectionOnPolygons[i][j]));
+              if (intersectionOnPolygons[i][0] > 0) {
+                newPolygon = newPolygon.concat(originPolygon.slice(0, intersectionOnPolygons[i][0]));
+              }
             }
           }
         }
       }
+
       newPointsOfPolygons.push(newPolygon);
     }
     return newPointsOfPolygons;
@@ -302,16 +307,19 @@ export default class Canvas extends Component {
     for (let polygon of this.pointsOfPolygons) {
       for (let indexPoint in polygon) {
         if (Number(indexPoint) !== polygon.length - 1) {
-          this.drawLine(
-            ctx,
-            polygon[indexPoint],
-            polygon[indexPoint*1+1],
-            polygon[indexPoint].color
-          );
+          const xSpacing = Math.abs(polygon[indexPoint*1+1].x - polygon[indexPoint].x);
+          const ySpacing = Math.abs(polygon[indexPoint*1+1].y - polygon[indexPoint].y);
+          if (xSpacing < 2 || ySpacing < 2) {
+            this.drawLine(
+              ctx,
+              polygon[indexPoint],
+              polygon[indexPoint*1+1],
+              polygon[indexPoint].color
+            );
+          }
         }
       }
     }
-
   }
 
   merge() {
